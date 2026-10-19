@@ -34,7 +34,32 @@ The `cucumberCli` task runs the Cucumber scenarios and writes an HTML report to
 
 ## Configuration
 
-Device and application settings are read from `src/main/resources/config.properties`.
+Device and application settings are read from `src/main/resources/config.properties` by
+`com.mobile.core.config.ConfigReader`.
+
+| Property | Purpose |
+| --- | --- |
+| `appium.server.url` | Base URL of the local Appium server. |
+| `device.udid` | UDID of the device or emulator under test. |
+| `app.package` | Android package of the application under test. |
+| `app.activity` | Launcher activity of the application under test. |
+
+Retrieve the package and activity of any installed app with:
+
+```powershell
+adb shell cmd package resolve-activity --brief com.google.android.deskclock
+```
+
+## Core layer
+
+`com.mobile.core.driver.AppiumDriverManager` owns a single Android session and is the only
+place that builds capabilities, so no other class calls `new AndroidDriver(...)`. The session
+uses `noReset`, which keeps the device data between runs.
+
+`com.mobile.core.controls` wraps element interaction. `BaseControl` exposes `click()`,
+`getText()`, and `isDisplayed()`, and the `Button`, `TextBox`, and `Label` subclasses add the
+behaviour their role needs. Every lookup goes through `Waits`, a fifteen second
+`WebDriverWait`, so the suite uses condition based waits and never `Thread.sleep`.
 
 Repository content and Java documentation are in English. Each class has a concise one-line
 Javadoc description, and the framework code is documented in the style of
