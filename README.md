@@ -14,6 +14,18 @@ driver management, screen objects, and test code separated.
 
 The Gradle Wrapper is included, so no separate Gradle installation is required.
 
+## Build
+
+The Wrapper runs Gradle 8.14.3 and the Java toolchain targets Java 21.
+
+```powershell
+.\gradlew.bat classes
+```
+
+The `cucumberCli` task runs the Cucumber scenarios and writes an HTML report to
+`build/reports/cucumber/report.html`. It requires at least one `.feature` file under
+`src/test/resources/features`, which the test layer provides.
+
 ## Layers
 
 - **Core** — configuration, Appium driver lifecycle, and reusable control wrappers.
