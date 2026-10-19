@@ -61,6 +61,8 @@ public class AlarmTimePickerScreen extends BaseScreen {
     /**
      * Focuses a field and replaces its content. Material only renders the editable
      * element while the field holds the focus, so the tap has to come first.
+     * @param fieldId resource id of the field
+     * @param value text to enter
      */
     private void typeInto(String fieldId, String value) {
         new Button(fieldArea(fieldId)).click();
@@ -83,6 +85,10 @@ public class AlarmTimePickerScreen extends BaseScreen {
         return By.xpath("//*[@resource-id='" + packageName() + ":id/" + fieldId + "']//android.widget.EditText");
     }
 
+    /** Tells whether the time period is afternoon.
+     * @param period time period
+     * @return {@code true} when the period is PM
+     */
     private boolean isAfternoon(String period) {
         return "PM".equalsIgnoreCase(period);
     }

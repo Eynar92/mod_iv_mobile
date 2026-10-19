@@ -12,6 +12,7 @@ public final class AppiumDriverManager {
     private static final ConfigReader CONFIG = new ConfigReader();
     private static AndroidDriver driver;
 
+    /** Prevents instances of the driver manager. */
     private AppiumDriverManager() {
     }
 
@@ -29,8 +30,11 @@ public final class AppiumDriverManager {
     /** Quits the session if one is running. Safe to call more than once. */
     public static void quitDriver() {
         if (driver != null) {
-            driver.quit();
-            driver = null;
+            try {
+                driver.quit();
+            } finally {
+                driver = null;
+            }
         }
     }
 
@@ -51,6 +55,9 @@ public final class AppiumDriverManager {
         getDriver().activateApp(appPackage);
     }
 
+    /** Creates a new Android Appium session.
+     * @return the connected Android driver
+     */
     private static AndroidDriver createSession() {
         String udid = CONFIG.getDeviceUdid();
         MutableCapabilities capabilities = new MutableCapabilities();

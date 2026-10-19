@@ -52,6 +52,11 @@ public final class ConfigReader {
         return required("app.activity");
     }
 
+    /** Returns a required nonblank configuration property.
+     * @param key property name
+     * @return configured property value
+     * @throws IllegalStateException when the property is missing or blank
+     */
     private String required(String key) {
         String value = properties.getProperty(key);
         if (value == null || value.isBlank()) {

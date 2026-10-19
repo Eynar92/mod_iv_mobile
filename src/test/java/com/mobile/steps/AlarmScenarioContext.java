@@ -5,6 +5,8 @@ public class AlarmScenarioContext {
 
     private String time;
     private String label;
+    private boolean alarmCreated;
+    private boolean alarmLabeled;
     private boolean alarmDeleted;
 
     /** Returns the time the scenario alarm was created with.
@@ -33,6 +35,34 @@ public class AlarmScenarioContext {
      */
     public void setLabel(String label) {
         this.label = label;
+    }
+
+    /** Tells whether this scenario created its alarm.
+     * @return {@code true} once the time was confirmed in the picker
+     */
+    public boolean isAlarmCreated() {
+        return alarmCreated;
+    }
+
+    /** Records ownership after the alarm time is confirmed.
+     * @param alarmCreated {@code true} after confirmation
+     */
+    public void setAlarmCreated(boolean alarmCreated) {
+        this.alarmCreated = alarmCreated;
+    }
+
+    /** Tells whether the scenario saved its alarm label.
+     * @return {@code true} after the label is saved
+     */
+    public boolean isAlarmLabeled() {
+        return alarmLabeled;
+    }
+
+    /** Records whether the scenario saved its alarm label.
+     * @param alarmLabeled {@code true} after the label is saved
+     */
+    public void setAlarmLabeled(boolean alarmLabeled) {
+        this.alarmLabeled = alarmLabeled;
     }
 
     /** Tells whether the scenario already deleted its own alarm.
