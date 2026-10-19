@@ -1,5 +1,6 @@
 package com.mobile.core.controls;
 
+import com.mobile.core.driver.AppiumDriverManager;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -34,6 +35,13 @@ public class BaseControl {
      */
     public boolean isDisplayed() {
         return resolve().isDisplayed();
+    }
+
+    /** Tells whether the element is currently present, without waiting for it.
+     * @return {@code true} when the element exists in the hierarchy
+     */
+    public boolean isPresent() {
+        return AppiumDriverManager.getDriver().findElements(locator).size() > 0;
     }
 
     /** Returns the visible text of the element.

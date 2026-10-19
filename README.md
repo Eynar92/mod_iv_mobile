@@ -61,6 +61,24 @@ uses `noReset`, which keeps the device data between runs.
 behaviour their role needs. Every lookup goes through `Waits`, a fifteen second
 `WebDriverWait`, so the suite uses condition based waits and never `Thread.sleep`.
 
+## Business layer
+
+`com.mobile.business.screens` holds one class per screen. `AlarmListScreen` covers the alarm
+list, `AlarmTimePickerScreen` the time picker dialog, and `AlarmEditorScreen` the editor sheet.
+Each screen keeps its own locators as private constants and exposes intent methods such as
+`openAlarm(String)`, so step definitions never build locators themselves.
+
+`com.mobile.business.flows.AlarmFlow` chains screens into the flows the scenario needs:
+`createAlarm(String time, String label)` and `deleteAlarm(String label)`.
+
+The time picker is driven in keyboard mode rather than through the clock face. The numbers on
+the face expose only an accessibility description and no resource id, whereas switching with
+`material_timepicker_mode_button` reveals real `EditText` fields for the hour and the minute.
+
+## Test layer
+
+The Cucumber feature, step definitions, and hooks live in `src/test/java/com/mobile`.
+
 Repository content and Java documentation are in English. Each class has a concise one-line
 Javadoc description, and the framework code is documented in the style of
 *Appium in Java* by Cem Kanner: encapsulated driver access, explicit waits instead of
