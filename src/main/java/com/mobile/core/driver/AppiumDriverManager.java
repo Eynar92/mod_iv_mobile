@@ -41,6 +41,16 @@ public final class AppiumDriverManager {
         return driver != null;
     }
 
+    /**
+     * Restarts the application under test. A session created after a failed run can resume
+     * with a dialog still open, so the process is replaced to start from a known state.
+     */
+    public static void restartApp() {
+        String appPackage = CONFIG.getAppPackage();
+        getDriver().terminateApp(appPackage);
+        getDriver().activateApp(appPackage);
+    }
+
     private static AndroidDriver createSession() {
         String udid = CONFIG.getDeviceUdid();
         MutableCapabilities capabilities = new MutableCapabilities();
