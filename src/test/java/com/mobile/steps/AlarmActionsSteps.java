@@ -31,10 +31,20 @@ public class AlarmActionsSteps {
      */
     @When("the user creates an alarm for {string} with the label {string}")
     public void theUserCreatesAnAlarm(String time, String label) {
+        AlarmListScreen alarmList = new AlarmListScreen().open();
+        if (alarmList.hasAlarmAtTime(time) || alarmList.hasAlarmWithLabel(label)) {
+            throw new IllegalStateException("An alarm already exists at the requested time or with the requested label");
+        }
         context.setTime(time);
         context.setLabel(label);
+        context.setAlarmCreated(false);
+        context.setAlarmLabeled(false);
         context.setAlarmDeleted(false);
-        new AlarmFlow().createAlarm(time, label);
+        AlarmFlow flow = new AlarmFlow();
+        flow.createAlarm(time);
+        context.setAlarmCreated(true);
+        flow.labelAlarm(time, label);
+        context.setAlarmLabeled(true);
     }
 
     /** Deletes the alarm carrying the given label.
@@ -42,7 +52,9 @@ public class AlarmActionsSteps {
      */
     @When("the user deletes the alarm labeled {string}")
     public void theUserDeletesTheAlarm(String label) {
-        new AlarmFlow().deleteAlarm(label);
-        context.setAlarmDeleted(true);
+        if (!label.equals(context.getLabel())) {
+            throw new IllegalArgumentException("The requested label does not match the scenario alarm");
+        }
+        new AlarmFlow().deleteAlarm(context.getTime(), label);
     }
 }

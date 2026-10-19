@@ -1,5 +1,6 @@
 package com.mobile.hooks;
 
+import com.mobile.business.flows.AlarmFlow;
 import com.mobile.business.screens.AlarmListScreen;
 import com.mobile.core.driver.AppiumDriverManager;
 import com.mobile.steps.AlarmScenarioContext;
@@ -26,21 +27,20 @@ public class MobileHooks {
         AppiumDriverManager.restartApp();
     }
 
-    /** Removes the scenario alarm when the scenario failed before deleting it. */
-    @After(order = 0)
-    public void removeScenarioAlarm() {
-        if (context.getLabel() == null || context.isAlarmDeleted()) {
-            return;
+    /** Cleans up the owned alarm before closing the Appium session. */
+    @After
+    public void cleanUpAndCloseSession() {
+        try {
+            if (context.isAlarmCreated() && !context.isAlarmDeleted() && AppiumDriverManager.hasDriver()) {
+                AlarmListScreen screen = new AlarmListScreen().dismissOverlays().open();
+                if (context.isAlarmLabeled() && screen.hasAlarm(context.getTime(), context.getLabel())) {
+                    new AlarmFlow().deleteAlarm(context.getTime(), context.getLabel());
+                } else if (screen.hasAlarmAtTime(context.getTime())) {
+                    new AlarmFlow().deleteAlarmAtTime(context.getTime());
+                }
+            }
+        } finally {
+            AppiumDriverManager.quitDriver();
         }
-        AlarmListScreen screen = new AlarmListScreen().dismissOverlays().open();
-        if (screen.hasAlarm(context.getLabel())) {
-            screen.openAlarm(context.getLabel()).delete();
-        }
-    }
-
-    /** Closes the Appium session. */
-    @After(order = 10)
-    public void closeSession() {
-        AppiumDriverManager.quitDriver();
     }
 }

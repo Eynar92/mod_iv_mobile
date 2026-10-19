@@ -66,10 +66,11 @@ behaviour their role needs. Every lookup goes through `Waits`, a fifteen second
 `com.mobile.business.screens` holds one class per screen. `AlarmListScreen` covers the alarm
 list, `AlarmTimePickerScreen` the time picker dialog, and `AlarmEditorScreen` the editor sheet.
 Each screen keeps its own locators as private constants and exposes intent methods such as
-`openAlarm(String)`, so step definitions never build locators themselves.
+`openAlarm(String time, String label)`, so step definitions never build locators themselves.
 
 `com.mobile.business.flows.AlarmFlow` chains screens into the flows the scenario needs:
-`createAlarm(String time, String label)` and `deleteAlarm(String label)`.
+`createAlarm(String time)`, `labelAlarm(String time, String label)`, and delete operations by
+time with a label or by the scenario-owned time alone.
 
 The time picker is driven in keyboard mode rather than through the clock face. The numbers on
 the face expose only an accessibility description and no resource id, whereas switching with
@@ -82,12 +83,16 @@ tapped before it is typed into. The picker also remembers the last mode it was l
 ## Test layer
 
 `src/test/resources/features/alarm_lifecycle.feature` holds a single scenario: open the
-application, create an alarm for `7:30 AM` named `Diplomado IV`, verify it is listed, delete
-it, and verify it is gone. The deletion is the cleanup that keeps the run repeatable.
+application, create an alarm for `7:30 AM` named `Diplomado IV`, verify the same alarm card
+shows both its time and label, delete it, and verify the alarm is gone. Before creating anything,
+the action checks that no alarm already uses the requested time or label. It records ownership
+only after the time is confirmed, so the cleanup hook can remove the created alarm by its known
+time even if labeling fails.
 
 `AlarmActionsSteps` holds the `Given` and `When` steps and delegates to `AlarmFlow`.
 `AlarmVerificationsSteps` holds the `Then` steps and owns every assertion. `MobileHooks` starts
-one Appium session per scenario and removes the alarm if the scenario failed before deleting it.
+one Appium session per scenario, removes only an alarm created by that scenario if needed, and
+closes the session after cleanup even when cleanup fails.
 
 ## Run
 
@@ -98,7 +103,8 @@ Start Appium, make sure the device is visible to `adb devices`, then:
 ```
 
 The report is written to `build/reports/cucumber/report.html`. Running the task again is safe:
-the scenario deletes the alarm it creates, so it can be repeated without cleaning the device.
+the scenario removes the alarm it creates. If another alarm already uses `7:30 AM` or the label
+`Diplomado IV`, the scenario fails before creating or changing any alarm.
 
 ## Project structure
 
@@ -134,11 +140,11 @@ mod_iv_mobile/
 - Google Clock asks for `POST_NOTIFICATIONS` on first launch. On the reference emulator the
   permission is already granted; otherwise run
   `adb shell pm grant com.google.android.deskclock android.permission.POST_NOTIFICATIONS`.
-- The scenario assumes the device shows times in the 12 hour English format, because the alarm
-  list identifies a card by the time and label rendered inside its content description.
+- The scenario assumes the device shows times in the 12 hour English format, because it matches
+  the time and label rendered in the same alarm card's content description.
 
 Repository content and Java documentation are in English. Each class has a concise one-line
-Javadoc description, and the framework code is documented in the style of
-*Appium in Java* by Cem Kanner: encapsulated driver access, explicit waits instead of
-fixed pauses, and screen objects that hold the business logic. The scenario is the project's
-end-to-end validation; there are no separate unit tests for the framework.
+Javadoc description. The code keeps driver management centralized, uses explicit waits instead
+of fixed pauses, and stores locators and screen operations in screen objects. The scenario is the
+project's end-to-end validation; there are no separate unit tests for the framework. These changes
+were statically reviewed; the mobile scenario was not run.

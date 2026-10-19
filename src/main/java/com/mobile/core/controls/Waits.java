@@ -11,6 +11,7 @@ public final class Waits {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(15);
 
+    /** Prevents instances of this utility class. */
     private Waits() {
     }
 
