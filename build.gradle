@@ -17,6 +17,10 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:6.1.3')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // Jackson backs the JSON that the Cucumber HTML report plugin writes
+    testRuntimeOnly 'com.fasterxml.jackson.core:jackson-databind:2.19.2'
+    testRuntimeOnly 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.19.2'
 }
 
 java {

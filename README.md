@@ -75,11 +75,70 @@ The time picker is driven in keyboard mode rather than through the clock face. T
 the face expose only an accessibility description and no resource id, whereas switching with
 `material_timepicker_mode_button` reveals real `EditText` fields for the hour and the minute.
 
+Material only renders the editable element while a field holds the focus, so each field is
+tapped before it is typed into. The picker also remembers the last mode it was left in, so
+`AlarmTimePickerScreen` reads the current mode instead of assuming one.
+
 ## Test layer
 
-The Cucumber feature, step definitions, and hooks live in `src/test/java/com/mobile`.
+`src/test/resources/features/alarm_lifecycle.feature` holds a single scenario: open the
+application, create an alarm for `7:30 AM` named `Diplomado IV`, verify it is listed, delete
+it, and verify it is gone. The deletion is the cleanup that keeps the run repeatable.
+
+`AlarmActionsSteps` holds the `Given` and `When` steps and delegates to `AlarmFlow`.
+`AlarmVerificationsSteps` holds the `Then` steps and owns every assertion. `MobileHooks` starts
+one Appium session per scenario and removes the alarm if the scenario failed before deleting it.
+
+## Run
+
+Start Appium, make sure the device is visible to `adb devices`, then:
+
+```powershell
+.\gradlew.bat cucumberCli
+```
+
+The report is written to `build/reports/cucumber/report.html`. Running the task again is safe:
+the scenario deletes the alarm it creates, so it can be repeated without cleaning the device.
+
+## Project structure
+
+```text
+mod_iv_mobile/
+├── build.gradle
+├── settings.gradle
+├── gradlew
+├── gradlew.bat
+├── gradle/wrapper/
+└── src/
+    ├── main/
+    │   ├── java/com/mobile/
+    │   │   ├── core/config/ConfigReader.java
+    │   │   ├── core/driver/AppiumDriverManager.java
+    │   │   ├── core/controls/{BaseControl,Button,TextBox,Label,Waits}.java
+    │   │   └── business/
+    │   │       ├── screens/{BaseScreen,AlarmListScreen,AlarmEditorScreen,AlarmTimePickerScreen}.java
+    │   │       └── flows/AlarmFlow.java
+    │   └── resources/config.properties
+    └── test/
+        ├── java/com/mobile/
+        │   ├── hooks/MobileHooks.java
+        │   └── steps/{AlarmActionsSteps,AlarmVerificationsSteps,AlarmScenarioContext}.java
+        └── resources/features/alarm_lifecycle.feature
+```
+
+## Notes
+
+- The session is created with `noReset`, so the device keeps its data between runs. The hook
+  restarts the application before each scenario, because a session created after a failed run
+  can resume with a dialog still open.
+- Google Clock asks for `POST_NOTIFICATIONS` on first launch. On the reference emulator the
+  permission is already granted; otherwise run
+  `adb shell pm grant com.google.android.deskclock android.permission.POST_NOTIFICATIONS`.
+- The scenario assumes the device shows times in the 12 hour English format, because the alarm
+  list identifies a card by the time and label rendered inside its content description.
 
 Repository content and Java documentation are in English. Each class has a concise one-line
 Javadoc description, and the framework code is documented in the style of
 *Appium in Java* by Cem Kanner: encapsulated driver access, explicit waits instead of
-fixed pauses, and screen objects that hold the business logic.
+fixed pauses, and screen objects that hold the business logic. The scenario is the project's
+end-to-end validation; there are no separate unit tests for the framework.
