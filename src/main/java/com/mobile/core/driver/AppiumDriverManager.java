@@ -3,7 +3,7 @@ package com.mobile.core.driver;
 import com.mobile.core.config.ConfigReader;
 import io.appium.java_client.android.AndroidDriver;
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 import org.openqa.selenium.MutableCapabilities;
 
 /** Owns the single Appium driver used for the whole scenario. */
@@ -69,8 +69,8 @@ public final class AppiumDriverManager {
         capabilities.setCapability("appium:appActivity", CONFIG.getAppActivity());
         capabilities.setCapability("appium:noReset", true);
         try {
-            return new AndroidDriver(new URL(CONFIG.getAppiumServerUrl()), capabilities);
-        } catch (MalformedURLException exception) {
+            return new AndroidDriver(URI.create(CONFIG.getAppiumServerUrl()).toURL(), capabilities);
+        } catch (MalformedURLException | IllegalArgumentException exception) {
             throw new IllegalStateException("Invalid Appium server URL in config.properties", exception);
         }
     }
