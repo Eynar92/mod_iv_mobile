@@ -33,11 +33,21 @@ tasks.withType(Test).configureEach {
     useJUnitPlatform()
 }
 
+tasks.register('installApp', Exec) {
+    group = 'verification'
+    description = 'Installs the configured APKM splits when the app is not installed'
+
+    def script = file('scripts/install-app.ps1').absolutePath
+    def shell = System.getProperty('os.name').toLowerCase().contains('windows')
+            ? 'powershell.exe' : 'pwsh'
+    commandLine shell, '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', script
+}
+
 tasks.register('cucumberCli', JavaExec) {
     group = 'verification'
     description = 'Runs the Cucumber alarm scenario'
 
-    dependsOn tasks.named('testClasses')
+    dependsOn tasks.named('testClasses'), tasks.named('installApp')
 
     classpath = sourceSets.test.runtimeClasspath
     mainClass = 'io.cucumber.core.cli.Main'

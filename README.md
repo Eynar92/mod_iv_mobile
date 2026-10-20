@@ -10,7 +10,7 @@ driver management, screen objects, and test code separated.
 - Android SDK with `adb` available on the `PATH`
 - Node.js and Appium with the UiAutomator2 driver
 - A running Android device or emulator visible to `adb devices`
-- The application under test installed on that device
+- PowerShell 5.1 or newer (`powershell.exe` on Windows, `pwsh` elsewhere)
 
 The Gradle Wrapper is included, so no separate Gradle installation is required.
 
@@ -43,6 +43,14 @@ Device and application settings are read from `src/main/resources/config.propert
 | `device.udid` | UDID of the device or emulator under test. |
 | `app.package` | Android package of the application under test. |
 | `app.activity` | Launcher activity of the application under test. |
+| `app.bundle` | APKM archive containing the base APK and device configuration splits. |
+
+`scripts/install-app.ps1` reads the configured device and package, checks whether the application
+is already installed, and skips installation when it is. Otherwise, it extracts the APKM into a
+new directory under `build/app-install` and installs its APK splits together with `adb install-multiple`.
+It never merges, re-signs, or installs only the base APK. The Appium server must run on the same
+machine as the configured device connection; the installer uses the local `adb` command before
+the Appium session starts.
 
 Retrieve the package and activity of any installed app with:
 
@@ -96,7 +104,23 @@ closes the session after cleanup even when cleanup fails.
 
 ## Run
 
-Start Appium, make sure the device is visible to `adb devices`, then:
+Make sure the configured device is visible to `adb devices`. The installer only needs the Android
+SDK `adb` command, not a running Appium server. Install the app with:
+
+```powershell
+.\gradlew.bat installApp
+```
+
+If the package is already installed, the installer leaves it in place; it does not check or upgrade
+the installed version. For a fresh installation it extracts and installs all APK splits from
+`apps/google-clock.apkm`. The archive is Google Clock 9.2 (build 993392871), intended for Android
+12L (API 32) or newer, so the device must support that app version. The archive originated from
+[APKMirror](https://www.apkmirror.com/apk/google-inc/clock/clock-9-2-release/).
+
+To run the end-to-end scenario, start Appium and run:
+
+`cucumberCli` runs `installApp` automatically before the Appium hooks, so a separate installation
+command is optional.
 
 ```powershell
 .\gradlew.bat cucumberCli
@@ -110,10 +134,12 @@ the scenario removes the alarm it creates. If another alarm already uses `7:30 A
 
 ```text
 mod_iv_mobile/
+├── apps/google-clock.apkm
 ├── build.gradle
 ├── settings.gradle
 ├── gradlew
 ├── gradlew.bat
+├── scripts/install-app.ps1
 ├── gradle/wrapper/
 └── src/
     ├── main/
@@ -146,5 +172,7 @@ mod_iv_mobile/
 Repository content and Java documentation are in English. Each class has a concise one-line
 Javadoc description. The code keeps driver management centralized, uses explicit waits instead
 of fixed pauses, and stores locators and screen operations in screen objects. The scenario is the
-project's end-to-end validation; there are no separate unit tests for the framework. These changes
-were statically reviewed; the mobile scenario was not run.
+project's end-to-end validation; there are no separate unit tests for the framework.
+
+This APK installation update received static review only; the installer and mobile scenario were
+not executed on a device.
